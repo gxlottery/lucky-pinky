@@ -35,18 +35,14 @@
         .deposit-btn { background: #ff4d94; color: white; }
         .withdraw-btn { background: white; color: #ff4d94; }
 
-        /* แถบชิปเดิมพัน */
         .chip-container { display: flex; justify-content: center; gap: 4px; padding: 0 10px 10px 10px; flex-wrap: wrap; }
         .chip { width: 42px; height: 42px; border-radius: 50%; background: white; border: 2px solid #ffccd5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .chip.active { background: #ff4d94; color: white; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 77, 148, 0.5); }
 
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px; flex-grow: 1; }
         .item { background: white; border-radius: 20px; padding: 5px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; height: 110px; }
-        
-        /* ปรับรูปสัตว์ให้ขยายใหญ่เต็มปุ่มตามต้องการ */
         .item img { width: 85%; height: auto; object-fit: contain; transform: scale(1.25); }
         .item span { font-size: 12px; margin-top: 5px; font-weight: 500; }
-
         .item.selected { border-color: #ff4d94; background: #fff0f5; transform: translateY(-3px); }
         .badge { position: absolute; top: -5px; right: -5px; background: #ff4d94; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; display: none; z-index: 10; font-weight: bold; }
         .result-area { height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -104,7 +100,6 @@
 </div>
 
 <script>
-// --- 1. Firebase Configuration ---
 const firebaseConfig = {
     apiKey: "AIzaSyACTSU6LYObSv5gEAfKJt4Yr4LaCCAkQvw",
     authDomain: "goldorax-game.firebaseapp.com",
@@ -122,58 +117,45 @@ const LINE_OA_URL = "https://lin.ee/Mm1caQx";
 const ADMIN_PASS = "77457017"; 
 
 const items = [
-    { name: "ปลา", img: "fish.png" },
-    { name: "ปู", img: "crab.png" },
-    { name: "กุ้ง", img: "shrimp.png" },
-    { name: "ไก่", img: "rooster.png" },
-    { name: "เสือ", img: "tiger.png" },
-    { name: "น้ำเต้า", img: "gourd.png" }
+    { name: "ปลา", img: "fish.png" }, { name: "ปู", img: "crab.png" }, { name: "กุ้ง", img: "shrimp.png" },
+    { name: "ไก่", img: "rooster.png" }, { name: "เสือ", img: "tiger.png" }, { name: "น้ำเต้า", img: "gourd.png" }
 ];
 
 const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
-// ฟังก์ชันช่วยแปลงชื่อเพื่อใช้เป็น Path ใน Firebase
-function cleanName(name) {
-    return name.replace(/\./g, ',').replace(/#/g, '').replace(/\$/g, '').replace(/\[/g, '').replace(/\]/g, '');
+// ฟังก์ชันล้างชื่อห้ามมีเครื่องหมายจุด เพื่อส่งไป Firebase
+function fixPath(name) {
+    if(!name) return "";
+    return name.replace(/\./g, '_dot_').replace(/@/g, '_at_').replace(/[#$\[\]]/g, '');
 }
 
-// --- Auth with Firebase ---
 function handleAuth() {
     let rawName = document.getElementById('usernameInput').value.trim();
     let pass = document.getElementById('passwordInput').value.trim();
     if(!rawName || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
     
-    // แปลงชื่อให้ Firebase ยอมรับ
-    let name = cleanName(rawName);
+    let safeName = fixPath(rawName);
     
-    database.ref('goldorax/lucky_pinky/users/' + name).once('value').then((snapshot) => {
+    database.ref('goldorax/lucky_pinky/users/' + safeName).once('value').then((snapshot) => {
         const userData = snapshot.val();
         if(userData) {
             if(userData.password === pass) { loginSuccess(rawName); }
             else { alert("รหัสผ่านไม่ถูกต้อง!"); }
         } else {
-            database.ref('goldorax/lucky_pinky/users/' + name).set({
-                password: pass,
-                balance: 5000,
-                displayName: rawName // เก็บชื่อจริงไว้แสดงผล
+            database.ref('goldorax/lucky_pinky/users/' + safeName).set({
+                password: pass, balance: 5000, realName: rawName
             }).then(() => {
                 alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(rawName);
             });
         }
-    });
+    }).catch(err => alert("เกิดข้อผิดพลาด: " + err.message));
 }
 
-function loginSuccess(name) { 
-    currentUser = name; 
-    sessionStorage.setItem('lucky_session_user', name); 
-    initGame(); 
-}
-
+function loginSuccess(name) { currentUser = name; sessionStorage.setItem('lucky_session_user', name); initGame(); }
 function logout() { sessionStorage.removeItem('lucky_session_user'); location.reload(); }
 
-// --- Admin ---
 function adminTrigger() {
     let pw = prompt("กรุณาใส่รหัสผ่านแอดมิน:");
     if(pw === ADMIN_PASS) {
@@ -187,17 +169,12 @@ function renderAdminUsers() {
         let users = snapshot.val() || {};
         let html = "";
         for(let key in users) {
-            let nameForDisplay = users[key].displayName || key;
+            let dName = users[key].realName || key;
             html += `
                 <div class="user-row">
                     <div class="user-info">
-                        <div>
-                            <strong style="color:#ff4d94; font-size:16px;">${nameForDisplay}</strong><br>
-                            <span style="font-size:12px;">รหัส: ${users[key].password}</span>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:14px; font-weight:bold;">เงิน: ${users[key].balance.toLocaleString()} ฿</span>
-                        </div>
+                        <div><strong style="color:#ff4d94;">${dName}</strong><br><span style="font-size:12px;">รหัส: ${users[key].password}</span></div>
+                        <div style="text-align:right;"><span style="font-weight:bold;">${users[key].balance.toLocaleString()} ฿</span></div>
                     </div>
                     <div class="admin-controls">
                         <input type="number" id="amt-${key}" class="admin-input" placeholder="ระบุจำนวนเงิน">
@@ -213,22 +190,18 @@ function renderAdminUsers() {
 function handleAdjust(key, mode) {
     let input = document.getElementById(`amt-${key}`);
     let val = parseInt(input.value);
-    if(isNaN(val) || val <= 0) return alert("กรุณาระบุจำนวนเงินที่ถูกต้อง");
-    
+    if(isNaN(val) || val <= 0) return alert("ระบุจำนวนที่ถูกต้อง");
     database.ref('goldorax/lucky_pinky/users/' + key).once('value').then(s => {
-        let currentBal = s.val().balance;
-        let newBal = mode === 'plus' ? currentBal + val : currentBal - val;
-        if(newBal < 0) newBal = 0;
-        database.ref('goldorax/lucky_pinky/users/' + key).update({ balance: newBal });
+        let newB = mode === 'plus' ? s.val().balance + val : s.val().balance - val;
+        database.ref('goldorax/lucky_pinky/users/' + key).update({ balance: Math.max(0, newB) });
         renderAdminUsers();
-        if(key === cleanName(currentUser)) syncBalance();
+        if(key === fixPath(currentUser)) syncBalance();
     });
     input.value = "";
 }
 
 function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; syncBalance(); }
 
-// --- Game Logic ---
 function initGame() {
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('gamePage').style.display = 'flex';
@@ -237,23 +210,20 @@ function initGame() {
 }
 
 function syncBalance() {
-    let nameKey = cleanName(currentUser);
-    database.ref('goldorax/lucky_pinky/users/' + nameKey).on('value', (snapshot) => {
-        if(snapshot.val()) {
-            balance = snapshot.val().balance;
+    let safe = fixPath(currentUser);
+    database.ref('goldorax/lucky_pinky/users/' + safe).on('value', (s) => {
+        if(s.val()) {
+            balance = s.val().balance;
             document.getElementById('balance').textContent = balance.toLocaleString();
         }
     });
 }
 
 function updateDBBalance(newAmt) {
-    let nameKey = cleanName(currentUser);
-    database.ref('goldorax/lucky_pinky/users/' + nameKey).update({ balance: newAmt });
+    database.ref('goldorax/lucky_pinky/users/' + fixPath(currentUser)).update({ balance: newAmt });
 }
 
-function goToLine() {
-    window.open(LINE_OA_URL, 'lineWindow', 'width=500,height=700');
-}
+function goToLine() { window.open(LINE_OA_URL, 'lineWindow', 'width=500,height=700'); }
 
 betOptions.forEach(amt => {
     const d = document.createElement("div");
@@ -308,12 +278,8 @@ function finalize() {
     for(let i in bets) {
         const match = dice.filter(d => d == i).length;
         if(match > 0) {
-            if(match === 3) {
-                win += (bets[i] + (bets[i] * 5)); 
-                isTriple = true;
-            } else {
-                win += (bets[i] + (bets[i] * match));
-            }
+            if(match === 3) { win += (bets[i] + (bets[i] * 5)); isTriple = true; }
+            else { win += (bets[i] + (bets[i] * match)); }
         }
     }
     updateDBBalance(balance + win);
@@ -324,7 +290,6 @@ function finalize() {
     bets = {}; updateItemUI();
     document.getElementById("rollBtn").disabled = false;
 }
-
 if(currentUser) initGame();
 </script>
 </body>
