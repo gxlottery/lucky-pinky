@@ -4,35 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUCKY PINKY - GoldoraX Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
-        /* สไตล์เดิมจาก luckyapp.html */
-        body { font-family: 'Kanit', sans-serif; background-color: #ffeef2; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
-        .header { background-color: #ff85a2; color: white; width: 100%; padding: 15px 0; text-align: center; font-size: 24px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .balance-container { background: white; border-radius: 15px; padding: 10px 20px; margin: 20px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 10px; }
-        .balance-label { color: #ff85a2; font-weight: bold; }
-        .balance-amount { font-size: 20px; color: #333; }
+        :root { --main-pink: #ff85a2; --light-pink: #ffeef2; --dark-pink: #ff6b8d; --white: #ffffff; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--light-pink); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px; }
+        .header { background-color: var(--main-pink); color: white; width: 100%; padding: 15px 0; text-align: center; font-size: 24px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .balance-container { background: white; border-radius: 20px; padding: 15px 25px; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; border: 2px solid var(--main-pink); }
+        .balance-label { color: var(--main-pink); font-weight: 600; font-size: 18px; }
+        .balance-amount { font-size: 24px; color: #333; font-weight: bold; }
         
-        /* ปรับขนาดรูปสัตว์ให้ใหญ่ขึ้นตามที่คุณต้องการ */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 90%; max-width: 400px; margin-bottom: 20px; }
-        .item { background: white; border-radius: 20px; padding: 15px 5px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; position: relative; overflow: hidden; border: 3px solid transparent; height: 130px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .item img { width: 95%; height: auto; object-fit: contain; transform: scale(1.25); margin-bottom: 5px; } /* ขยายรูปให้ใหญ่และซูม */
-        .item.selected { border-color: #ff85a2; background-color: #fff0f3; transform: scale(1.05); }
-        .bet-badge { position: absolute; top: 5px; right: 5px; background: #ff85a2; color: white; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 95%; max-width: 450px; margin-bottom: 20px; }
+        .item { background: white; border-radius: 20px; padding: 10px 5px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; border: 3px solid transparent; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
+        /* ปรับขนาดรูปสัตว์ให้ใหญ่เต็มปุ่มตามที่คุณต้องการ */
+        .item img { width: 90%; height: auto; object-fit: contain; transform: scale(1.3); transition: transform 0.3s; margin-bottom: 5px; }
+        .item:active { transform: scale(0.95); }
+        .item.selected { border-color: var(--main-pink); background-color: #fff0f3; box-shadow: 0 0 15px rgba(255, 133, 162, 0.3); }
+        
+        .bet-badge { position: absolute; top: 8px; right: 8px; background: var(--main-pink); color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .controls { width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 12px; }
+        .bet-input-group { display: flex; align-items: center; gap: 10px; background: white; padding: 12px 20px; border-radius: 15px; border: 1px solid #eee; }
+        input[type="number"] { flex: 1; border: none; outline: none; font-size: 18px; padding: 5px; font-family: 'Kanit'; font-weight: bold; color: var(--main-pink); }
+        
+        .btn-main { background-color: var(--main-pink); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 133, 162, 0.3); transition: all 0.2s; }
+        .btn-main:hover { background-color: var(--dark-pink); transform: translateY(-2px); }
+        .btn-main:active { transform: translateY(0); }
+        .btn-main:disabled { background-color: #ccc; box-shadow: none; transform: none; }
 
-        .controls { width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
-        .bet-input-group { display: flex; align-items: center; gap: 10px; background: white; padding: 10px; border-radius: 15px; }
-        input[type="number"] { flex: 1; border: none; outline: none; font-size: 16px; padding: 5px; }
-        button { background-color: #ff85a2; color: white; border: none; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
-        button:hover { background-color: #ff6b8d; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        input[type="text"], input[type="password"] { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; font-family: 'Kanit'; font-size: 16px; box-sizing: border-box; background: #f9f9f9; }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 80%; max-width: 300px; text-align: center; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        /* Admin Section */
+        #adminPanel { margin-top: 20px; display: none; width: 90%; max-width: 400px; background: #fff; padding: 20px; border-radius: 20px; border: 2px dashed var(--main-pink); }
     </style>
 </head>
 <body>
@@ -42,56 +51,66 @@
     <div class="balance-container">
         <span class="balance-label">ยอดเงิน:</span>
         <span class="balance-amount" id="balanceDisplay">0</span>
-        <span id="userTag" style="font-size: 12px; color: #aaa; margin-left: 10px;"></span>
+        <span id="userDisplay" style="margin-left:auto; font-size:14px; color:#888;"></span>
     </div>
 
-    <div class="grid" id="gameGrid">
-        <div class="item" onclick="selectItem('tiger')">
+    <div class="grid">
+        <div class="item" onclick="placeBet('tiger')">
             <img src="tiger.png" alt="Tiger">
-            <div id="bet-tiger" class="bet-badge" style="display:none">0</div>
+            <div id="badge-tiger" class="bet-badge" style="display:none">0</div>
         </div>
-        <div class="item" onclick="selectItem('rooster')">
+        <div class="item" onclick="placeBet('rooster')">
             <img src="rooster.png" alt="Rooster">
-            <div id="bet-rooster" class="bet-badge" style="display:none">0</div>
+            <div id="badge-rooster" class="bet-badge" style="display:none">0</div>
         </div>
-        <div class="item" onclick="selectItem('shrimp')">
+        <div class="item" onclick="placeBet('shrimp')">
             <img src="shrimp.png" alt="Shrimp">
-            <div id="bet-shrimp" class="bet-badge" style="display:none">0</div>
+            <div id="badge-shrimp" class="bet-badge" style="display:none">0</div>
         </div>
-        <div class="item" onclick="selectItem('crab')">
+        <div class="item" onclick="placeBet('crab')">
             <img src="crab.png" alt="Crab">
-            <div id="bet-crab" class="bet-badge" style="display:none">0</div>
+            <div id="badge-crab" class="bet-badge" style="display:none">0</div>
         </div>
-        <div class="item" onclick="selectItem('fish')">
+        <div class="item" onclick="placeBet('fish')">
             <img src="fish.png" alt="Fish">
-            <div id="bet-fish" class="bet-badge" style="display:none">0</div>
+            <div id="badge-fish" class="bet-badge" style="display:none">0</div>
         </div>
-        <div class="item" onclick="selectItem('gourd')">
+        <div class="item" onclick="placeBet('gourd')">
             <img src="gourd.png" alt="Gourd">
-            <div id="bet-gourd" class="bet-badge" style="display:none">0</div>
+            <div id="badge-gourd" class="bet-badge" style="display:none">0</div>
         </div>
     </div>
 
     <div class="controls">
         <div class="bet-input-group">
-            <span>เดิมพัน:</span>
+            <span style="font-weight:bold; color:#666;">จำนวนเดิมพัน:</span>
             <input type="number" id="betInput" value="10" min="1">
         </div>
-        <button id="spinBtn" onclick="spin()">เริ่มสุ่ม!</button>
-        <button style="background:#aaa; margin-top:10px; font-size:14px;" onclick="logout()">ออกจากระบบ</button>
+        <button id="spinBtn" class="btn-main" onclick="playGame()">หมุนเลย!</button>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button onclick="logout()" style="flex:1; background:#eee; color:#666; border:none; padding:10px; border-radius:10px; cursor:pointer;">ออกจากระบบ</button>
+            <button onclick="toggleAdmin()" style="flex:1; background:#eee; color:#666; border:none; padding:10px; border-radius:10px; cursor:pointer;">Admin</button>
+        </div>
+    </div>
+
+    <div id="adminPanel">
+        <h4 style="margin:0 0 10px 0;">ตั้งค่า Admin</h4>
+        <input type="number" id="adminBalanceInput" placeholder="จำนวนเงิน">
+        <button onclick="adminSetBalance()" class="btn-main" style="width:100%; padding:10px; font-size:16px;">ปรับยอดเงิน</button>
     </div>
 
     <div id="loginModal" class="modal" style="display:flex;">
         <div class="modal-content">
-            <h3>เข้าสู่ระบบ</h3>
+            <h2 style="color:var(--main-pink); margin-top:0;">LUCKY PINKY</h2>
+            <p>กรุณาลงชื่อเข้าใช้งาน</p>
             <input type="text" id="usernameInput" placeholder="ชื่อผู้ใช้">
             <input type="password" id="passwordInput" placeholder="รหัสผ่าน">
-            <button onclick="handleAuth()" style="width:100%;">ตกลง</button>
+            <button onclick="handleAuth()" class="btn-main" style="width:100%;">เข้าสู่ระบบ</button>
         </div>
     </div>
 
     <script>
-        // --- Firebase Configuration ---
+        // --- 1. Firebase Configuration (GoldoraX-Game) ---
         const firebaseConfig = {
             apiKey: "AIzaSyACTSU6LYObSv5gEAfKJt4Yr4LaCCAkQvw",
             authDomain: "goldorax-game.firebaseapp.com",
@@ -106,94 +125,119 @@
         const database = firebase.database();
 
         let currentUser = null;
-        let bets = {};
+        let currentBets = {};
 
-        // --- Auth & Data Functions ---
+        // --- 2. Auth & Core Data Functions ---
         function handleAuth() {
-            const user = document.getElementById('usernameInput').value;
-            if(!user) return alert("กรุณาใส่ชื่อ");
-            
+            const user = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value;
+            if(!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบ");
+
             currentUser = user;
             document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('userTag').innerText = "@" + user;
-            
+            document.getElementById('userDisplay').innerText = user;
+
             // ดึงข้อมูลจาก Firebase
-            database.ref('goldorax/lucky_pinky/users/' + currentUser).once('value').then((snapshot) => {
+            database.ref('goldorax/lucky_pinky/users/' + user).once('value').then((snapshot) => {
                 const data = snapshot.val();
                 if(data) {
-                    syncBalance(data.balance);
+                    updateUI(data.balance);
                 } else {
-                    // ถ้าเป็น User ใหม่ ให้เริ่มที่ 1000
-                    updateDBBalance(1000);
+                    // ผู้เล่นใหม่
+                    saveToFirebase(1000);
                 }
             });
         }
 
-        function updateDBBalance(newAmt) {
-            if(currentUser) {
-                database.ref('goldorax/lucky_pinky/users/' + currentUser).update({
-                    balance: newAmt,
-                    lastUpdate: firebase.database.ServerValue.TIMESTAMP
-                });
-            }
-            syncBalance(newAmt);
+        function saveToFirebase(newBalance) {
+            if(!currentUser) return;
+            database.ref('goldorax/lucky_pinky/users/' + currentUser).update({
+                balance: newBalance,
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+            });
+            updateUI(newBalance);
         }
 
-        function syncBalance(amt) {
-            document.getElementById('balanceDisplay').innerText = amt.toLocaleString();
-            // เก็บลง LocalStorage สำรองไว้ด้วย
-            localStorage.setItem('currentBalance', amt);
+        function updateUI(balance) {
+            document.getElementById('balanceDisplay').innerText = balance.toLocaleString();
         }
 
-        function getBalance() {
+        function getCurrentBalance() {
             return parseInt(document.getElementById('balanceDisplay').innerText.replace(/,/g, '')) || 0;
         }
 
-        // --- Game Logic ---
-        function selectItem(item) {
-            const betAmt = parseInt(document.getElementById('betInput').value);
-            const currentBal = getBalance();
-            if(betAmt > currentBal) return alert("เงินไม่พอ!");
+        // --- 3. Game Logic ---
+        function placeBet(animal) {
+            const amount = parseInt(document.getElementById('betInput').value);
+            const balance = getCurrentBalance();
 
-            bets[item] = (bets[item] || 0) + betAmt;
-            updateDBBalance(currentBal - betAmt);
-            
-            const badge = document.getElementById('bet-' + item);
-            badge.innerText = bets[item];
-            badge.style.display = 'flex';
+            if(amount > balance) return alert("ยอดเงินไม่เพียงพอ!");
+            if(amount <= 0) return alert("กรุณาใส่จำนวนเงินที่ถูกต้อง");
+
+            currentBets[animal] = (currentBets[animal] || 0) + amount;
+            saveToFirebase(balance - amount);
+
+            const badge = document.getElementById('badge-' + animal);
+            badge.innerText = currentBets[animal];
+            badge.style.display = 'block';
         }
 
-        function spin() {
-            const items = ['tiger', 'rooster', 'shrimp', 'crab', 'fish', 'gourd'];
-            if(Object.keys(bets).length === 0) return alert("กรุณาวางเดิมพันก่อน!");
+        function playGame() {
+            const animals = ['tiger', 'rooster', 'shrimp', 'crab', 'fish', 'gourd'];
+            if(Object.keys(currentBets).length === 0) return alert("กรุณาวางเดิมพันก่อน");
 
-            document.getElementById('spinBtn').disabled = true;
-            
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            btn.innerText = "กำลังสุ่ม...";
+
             setTimeout(() => {
-                const result = items[Math.floor(Math.random() * items.length)];
-                let winAmt = 0;
+                const winAnimal = animals[Math.floor(Math.random() * animals.length)];
+                let winAmount = 0;
 
-                if(bets[result]) {
-                    winAmt = bets[result] * 6; // ชนะได้ 6 เท่า
-                    alert("ยินดีด้วย! ออก " + result + " คุณได้รับ " + winAmt);
+                if(currentBets[winAnimal]) {
+                    winAmount = currentBets[winAnimal] * 6; // รางวัล 6 เท่า
+                    alert("ยินดีด้วย! ผลรางวัลคือ: " + winAnimal.toUpperCase() + "\nคุณได้รับเงิน: " + winAmount);
                 } else {
-                    alert("เสียใจด้วย! ออก " + result);
+                    alert("เสียใจด้วย! ผลรางวัลคือ: " + winAnimal.toUpperCase());
                 }
 
-                updateDBBalance(getBalance() + winAmt);
-                resetBets();
-                document.getElementById('spinBtn').disabled = false;
-            }, 1000);
+                saveToFirebase(getCurrentBalance() + winAmount);
+                resetTable();
+                btn.disabled = false;
+                btn.innerText = "หมุนเลย!";
+            }, 1200);
         }
 
-        function resetBets() {
-            bets = {};
-            const badges = document.querySelectorAll('.bet-badge');
-            badges.forEach(b => { b.style.display = 'none'; b.innerText = '0'; });
+        function resetTable() {
+            currentBets = {};
+            document.querySelectorAll('.bet-badge').forEach(b => {
+                b.style.display = 'none';
+                b.innerText = '0';
+            });
+        }
+
+        // --- 4. Admin Functions ---
+        function toggleAdmin() {
+            const pass = prompt("กรุณาใส่รหัสผ่าน Admin:");
+            if(pass === "77457017") { // รหัสเดิมจาก luckyapp.html
+                const panel = document.getElementById('adminPanel');
+                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            } else {
+                alert("รหัสผ่านไม่ถูกต้อง");
+            }
+        }
+
+        function adminSetBalance() {
+            const newBal = parseInt(document.getElementById('adminBalanceInput').value);
+            if(isNaN(newBal)) return alert("กรุณาระบุจำนวนเงิน");
+            saveToFirebase(newBal);
+            alert("ปรับยอดเงินเรียบร้อย");
         }
 
         function logout() {
-            location.reload();
+            if(confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
+                location.reload();
+            }
         }
     </script>
 </body>
