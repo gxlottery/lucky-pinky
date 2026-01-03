@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LUCKY PINKY - GoldoraX Edition</title>
+    <title>LUCKY PINKY - Pro Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -30,33 +30,27 @@
         header { text-align: center; padding: 10px 0; font-size: 20px; font-weight: bold; color: white; text-shadow: 1px 2px 4px rgba(0,0,0,0.1); cursor: pointer; }
         .status-bar { background: rgba(255, 255, 255, 0.85); margin: 0 15px 10px 15px; padding: 10px 15px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         #balance { color: #ff4d94; font-weight: bold; font-size: 18px; }
-        
+        .wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 10px 15px; }
+        .btn-wallet { padding: 10px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .deposit-btn { background: #ff4d94; color: white; }
+        .withdraw-btn { background: white; color: #ff4d94; }
+
         /* แถบชิปเดิมพัน */
         .chip-container { display: flex; justify-content: center; gap: 4px; padding: 0 10px 10px 10px; flex-wrap: wrap; }
         .chip { width: 42px; height: 42px; border-radius: 50%; background: white; border: 2px solid #ffccd5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
         .chip.active { background: #ff4d94; color: white; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 77, 148, 0.5); }
 
-        /* ปรับปรุงขนาดรูปสัตว์ให้เต็มปุ่ม */
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px; flex-grow: 1; }
-        .item { 
-            background: white; border-radius: 20px; padding: 5px; text-align: center; 
-            position: relative; border: 3px solid transparent; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            transition: 0.2s; height: 110px; /* กำหนดความสูงคงที่ */
-        }
-        .item img { 
-            width: 85%; /* ขยายรูปให้ใหญ่ขึ้น */
-            height: auto; 
-            object-fit: contain; 
-            transform: scale(1.2); /* ซูมเข้าไปในรูป */
-        }
-        .item span { font-size: 12px; margin-top: 2px; color: #881337; font-weight: 500; }
+        .item { background: white; border-radius: 20px; padding: 5px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; height: 110px; }
         
+        /* ปรับรูปสัตว์ให้ขยายใหญ่เต็มปุ่มตามต้องการ */
+        .item img { width: 85%; height: auto; object-fit: contain; transform: scale(1.25); }
+        .item span { font-size: 12px; margin-top: 5px; font-weight: 500; }
+
         .item.selected { border-color: #ff4d94; background: #fff0f5; transform: translateY(-3px); }
         .badge { position: absolute; top: -5px; right: -5px; background: #ff4d94; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; display: none; z-index: 10; font-weight: bold; }
-        
         .result-area { height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .dice-row img { width: 40px; height: 40px; margin: 0 4px; border-radius: 8px; background: white; padding: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .dice-row img { width: 40px; height: 40px; margin: 0 4px; border-radius: 8px; background: white; padding: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         #rollBtn { background: #ff4d94; color: white; padding: 14px; width: 90%; font-size: 22px; border-radius: 50px; border: none; font-weight: bold; align-self: center; margin-bottom: 10px; cursor: pointer; box-shadow: 0 8px 20px rgba(255, 77, 148, 0.4); }
 
         /* Admin Modal */
@@ -66,6 +60,10 @@
         }
         .admin-title { font-size: 24px; font-weight: bold; color: #ff4d94; border-bottom: 3px solid #ff4d94; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .user-row { background: white; padding: 15px; border-radius: 20px; margin-bottom: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(255, 77, 148, 0.1); border: 1px solid #ffccd5; }
+        .user-info { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
+        .admin-controls { display: flex; gap: 5px; width: 100%; }
+        .admin-input { flex-grow: 1; padding: 8px; border-radius: 10px; border: 1px solid #ffccd5; outline: none; font-family: 'Kanit'; }
+        .admin-btn { padding: 8px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -73,6 +71,7 @@
 <div id="loginPage">
     <div class="login-card">
         <h1 onclick="adminTrigger()">💖 LUCKY PINKY</h1>
+        <p style="font-size: 13px; color: #881337; margin-bottom: 20px;">ระบุชื่อและรหัสผ่านเพื่อเข้าเล่น</p>
         <input type="text" id="usernameInput" class="login-input" placeholder="ชื่อผู้เล่น">
         <input type="password" id="passwordInput" class="login-input" placeholder="รหัสผ่าน (4 หลักขึ้นไป)">
         <button class="btn-login" onclick="handleAuth()">เข้าสู่ระบบ / สมัครสมาชิก</button>
@@ -84,6 +83,10 @@
     <div class="status-bar">
         <div>ผู้เล่น: <span id="displayName" style="font-weight:bold; color:#ff4d94;"></span></div>
         <div>เครดิต: <span id="balance">0</span> ฿</div>
+    </div>
+    <div class="wallet-actions">
+        <button class="btn-wallet deposit-btn" onclick="goToLine()">➕ เติมเงิน</button>
+        <button class="btn-wallet withdraw-btn" onclick="goToLine()">➖ ถอนเงิน</button>
     </div>
     <div class="chip-container" id="chipSelector"></div>
     <div class="board" id="board"></div>
@@ -101,7 +104,7 @@
 </div>
 
 <script>
-// --- 2. Firebase Config ---
+// --- 1. Firebase Configuration ---
 const firebaseConfig = {
     apiKey: "AIzaSyACTSU6LYObSv5gEAfKJt4Yr4LaCCAkQvw",
     authDomain: "goldorax-game.firebaseapp.com",
@@ -115,7 +118,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+const LINE_OA_URL = "https://lin.ee/Mm1caQx";
 const ADMIN_PASS = "77457017"; 
+
 const items = [
     { name: "ปลา", img: "fish.png" },
     { name: "ปู", img: "crab.png" },
@@ -124,46 +129,37 @@ const items = [
     { name: "เสือ", img: "tiger.png" },
     { name: "น้ำเต้า", img: "gourd.png" }
 ];
+
 const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
-// --- 3. Auth with Firebase ---
+// --- Auth with Firebase ---
 function handleAuth() {
     let name = document.getElementById('usernameInput').value.trim();
     let pass = document.getElementById('passwordInput').value.trim();
     if(!name || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
-
+    
     database.ref('goldorax/lucky_pinky/users/' + name).once('value').then((snapshot) => {
         const userData = snapshot.val();
         if(userData) {
             if(userData.password === pass) { loginSuccess(name); }
             else { alert("รหัสผ่านไม่ถูกต้อง!"); }
         } else {
-            // สมัครสมาชิกใหม่ลง Firebase
             database.ref('goldorax/lucky_pinky/users/' + name).set({
                 password: pass,
                 balance: 5000
             }).then(() => {
-                alert("สมัครสมาชิกสำเร็จ!"); 
-                loginSuccess(name);
+                alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(name);
             });
         }
     });
 }
 
-function loginSuccess(name) { 
-    currentUser = name; 
-    sessionStorage.setItem('lucky_session_user', name); 
-    initGame(); 
-}
+function loginSuccess(name) { currentUser = name; sessionStorage.setItem('lucky_session_user', name); initGame(); }
+function logout() { sessionStorage.removeItem('lucky_session_user'); location.reload(); }
 
-function logout() { 
-    sessionStorage.removeItem('lucky_session_user'); 
-    location.reload(); 
-}
-
-// --- 4. Admin Functions ---
+// --- Admin ---
 function adminTrigger() {
     let pw = prompt("กรุณาใส่รหัสผ่านแอดมิน:");
     if(pw === ADMIN_PASS) {
@@ -179,35 +175,45 @@ function renderAdminUsers() {
         for(let name in users) {
             html += `
                 <div class="user-row">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${name} (รหัส: ${users[name].password})</strong>
-                        <span>${users[name].balance.toLocaleString()} ฿</span>
+                    <div class="user-info">
+                        <div>
+                            <strong style="color:#ff4d94; font-size:16px;">${name}</strong><br>
+                            <span style="font-size:12px;">รหัส: ${users[name].password}</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:14px; font-weight:bold;">เงิน: ${users[name].balance.toLocaleString()} ฿</span>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:5px; margin-top:10px;">
-                        <input type="number" id="amt-${name}" style="flex:1; border-radius:10px; border:1px solid #ccc; padding:5px;" placeholder="จำนวน">
-                        <button onclick="handleAdjust('${name}', true)" style="background:#4ade80; border:none; color:white; padding:5px 15px; border-radius:10px;">เติม</button>
-                        <button onclick="handleAdjust('${name}', false)" style="background:#f87171; border:none; color:white; padding:5px 15px; border-radius:10px;">หัก</button>
+                    <div class="admin-controls">
+                        <input type="number" id="amt-${name}" class="admin-input" placeholder="ระบุจำนวนเงิน">
+                        <button class="admin-btn" style="background:#4ade80;" onclick="handleAdjust('${name}', 'plus')">เติม</button>
+                        <button class="admin-btn" style="background:#f87171;" onclick="handleAdjust('${name}', 'minus')">หัก</button>
                     </div>
                 </div>`;
         }
-        document.getElementById('userList').innerHTML = html;
+        document.getElementById('userList').innerHTML = html || "<p style='text-align:center;'>ยังไม่มีผู้เล่น</p>";
     });
 }
 
-function handleAdjust(name, isPlus) {
-    let amt = parseInt(document.getElementById('amt-'+name).value);
-    if(isNaN(amt)) return;
+function handleAdjust(name, mode) {
+    let input = document.getElementById(`amt-${name}`);
+    let val = parseInt(input.value);
+    if(isNaN(val) || val <= 0) return alert("กรุณาระบุจำนวนเงินที่ถูกต้อง");
+    
     database.ref('goldorax/lucky_pinky/users/' + name).once('value').then(s => {
-        let newBal = isPlus ? s.val().balance + amt : s.val().balance - amt;
+        let currentBal = s.val().balance;
+        let newBal = mode === 'plus' ? currentBal + val : currentBal - val;
+        if(newBal < 0) newBal = 0;
         database.ref('goldorax/lucky_pinky/users/' + name).update({ balance: newBal });
         renderAdminUsers();
         if(name === currentUser) syncBalance();
     });
+    input.value = "";
 }
 
 function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; syncBalance(); }
 
-// --- 5. Game Logic ---
+// --- Game Logic ---
 function initGame() {
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('gamePage').style.display = 'flex';
@@ -228,7 +234,11 @@ function updateDBBalance(newAmt) {
     database.ref('goldorax/lucky_pinky/users/' + currentUser).update({ balance: newAmt });
 }
 
-// สร้างปุ่มชิป
+// ลิงก์ไป Line OA แบบเปิดหน้าต่างใหม่ไม่หลุดจากแอป
+function goToLine() {
+    window.open(LINE_OA_URL, 'lineWindow', 'width=500,height=700');
+}
+
 betOptions.forEach(amt => {
     const d = document.createElement("div");
     d.className = `chip ${amt === currentChip ? 'active' : ''}`;
@@ -240,7 +250,6 @@ betOptions.forEach(amt => {
     document.getElementById("chipSelector").appendChild(d);
 });
 
-// สร้างตารางเดิมพัน
 items.forEach((item, idx) => {
     const d = document.createElement("div");
     d.className = "item";
@@ -268,7 +277,6 @@ document.getElementById("rollBtn").onclick = () => {
     if(total === 0) return alert("กรุณาวางเดิมพันก่อนเล่น");
     document.getElementById("rollBtn").disabled = true;
     updateDBBalance(balance - total);
-    
     let c = 0;
     const s = setInterval(() => {
         const tmp = Array.from({length:3}, () => items[Math.floor(Math.random()*6)].img);
@@ -280,14 +288,22 @@ document.getElementById("rollBtn").onclick = () => {
 function finalize() {
     const dice = Array.from({length:3}, () => Math.floor(Math.random()*6));
     let win = 0;
+    let isTriple = false;
     for(let i in bets) {
         const match = dice.filter(d => d == i).length;
-        if(match > 0) win += (bets[i] + (bets[i] * match));
+        if(match > 0) {
+            if(match === 3) {
+                win += (bets[i] + (bets[i] * 5)); 
+                isTriple = true;
+            } else {
+                win += (bets[i] + (bets[i] * match));
+            }
+        }
     }
     updateDBBalance(balance + win);
     document.getElementById("resultArea").innerHTML = `
         <div class="dice-row">${dice.map(d => `<img src="${items[d].img}">`).join("")}</div>
-        <div style="color:white; font-weight:bold; font-size:18px;">${win > 0 ? 'ชนะได้รับ: +' + win : 'ไม่ถูกรางวัล'}</div>
+        <div style="color:white; font-weight:bold; font-size:18px;">${win > 0 ? (isTriple ? '🔥 ตอง x5! +' + win : 'ชนะได้รับ: +' + win) : 'ไม่ถูกรางวัล'}</div>
     `;
     bets = {}; updateItemUI();
     document.getElementById("rollBtn").disabled = false;
