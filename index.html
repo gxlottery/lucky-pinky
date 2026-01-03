@@ -41,16 +41,7 @@
 
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px; flex-grow: 1; }
         .item { background: white; border-radius: 20px; padding: 8px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; height: 120px; overflow: hidden; }
-        
-        /* แก้ไขส่วนรูปภาพ: ปรับให้ใหญ่แต่ไม่ล้น */
-        .item img { 
-            width: auto; 
-            height: 75px; /* กำหนดความสูงตายตัวเพื่อให้รูปไม่ล้นปุ่ม */
-            max-width: 100%; 
-            object-fit: contain; 
-            display: block;
-            margin: 0 auto;
-        }
+        .item img { width: auto; height: 75px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; }
         .item span { font-size: 12px; margin-top: 4px; font-weight: 500; color: #881337; }
         .item.selected { border-color: #ff4d94; background: #fff0f5; transform: translateY(-3px); }
         
@@ -58,6 +49,14 @@
         .result-area { height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .dice-row img { width: 45px; height: 45px; margin: 0 4px; border-radius: 8px; background: white; padding: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         #rollBtn { background: #ff4d94; color: white; padding: 14px; width: 90%; font-size: 22px; border-radius: 50px; border: none; font-weight: bold; align-self: center; margin-bottom: 10px; cursor: pointer; box-shadow: 0 8px 20px rgba(255, 77, 148, 0.4); }
+
+        /* ระบบ Popup Line OA */
+        #linePopup { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: white; z-index: 2000; flex-direction: column; 
+        }
+        #linePopup header { background: #06c755; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        #linePopup iframe { border: none; flex-grow: 1; width: 100%; height: 100%; }
 
         /* Admin Modal */
         #adminModal { 
@@ -73,6 +72,14 @@
     </style>
 </head>
 <body>
+
+<div id="linePopup">
+    <header>
+        <span style="color:white; font-size:16px;">ติดต่อเจ้าหน้าที่</span>
+        <button onclick="closeLine()" style="background:white; color:#06c755; border:none; padding:5px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">ปิดหน้าต่าง</button>
+    </header>
+    <iframe id="lineFrame" src=""></iframe>
+</div>
 
 <div id="loginPage">
     <div class="login-card">
@@ -91,8 +98,8 @@
         <div>เครดิต: <span id="balance">0</span> ฿</div>
     </div>
     <div class="wallet-actions">
-        <button class="btn-wallet deposit-btn" onclick="goToLine()">➕ เติมเงิน</button>
-        <button class="btn-wallet withdraw-btn" onclick="goToLine()">➖ ถอนเงิน</button>
+        <button class="btn-wallet deposit-btn" onclick="openLine()">➕ เติมเงิน</button>
+        <button class="btn-wallet withdraw-btn" onclick="openLine()">➖ ถอนเงิน</button>
     </div>
     <div class="chip-container" id="chipSelector"></div>
     <div class="board" id="board"></div>
@@ -134,6 +141,16 @@ const items = [
 const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
+
+// ระบบเปิด-ปิด Line Popup
+function openLine() {
+    document.getElementById('lineFrame').src = LINE_OA_URL;
+    document.getElementById('linePopup').style.display = 'flex';
+}
+function closeLine() {
+    document.getElementById('linePopup').style.display = 'none';
+    document.getElementById('lineFrame').src = "";
+}
 
 function fixPath(name) {
     if(!name) return "";
@@ -229,8 +246,6 @@ function syncBalance() {
 function updateDBBalance(newAmt) {
     database.ref('goldorax/lucky_pinky/users/' + fixPath(currentUser)).update({ balance: newAmt });
 }
-
-function goToLine() { window.open(LINE_OA_URL, 'lineWindow', 'width=500,height=700'); }
 
 betOptions.forEach(amt => {
     const d = document.createElement("div");
