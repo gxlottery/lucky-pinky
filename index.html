@@ -40,13 +40,23 @@
         .chip.active { background: #ff4d94; color: white; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 77, 148, 0.5); }
 
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px; flex-grow: 1; }
-        .item { background: white; border-radius: 20px; padding: 5px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; height: 110px; }
-        .item img { width: 85%; height: auto; object-fit: contain; transform: scale(1.25); }
-        .item span { font-size: 12px; margin-top: 5px; font-weight: 500; }
+        .item { background: white; border-radius: 20px; padding: 8px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; height: 120px; overflow: hidden; }
+        
+        /* แก้ไขส่วนรูปภาพ: ปรับให้ใหญ่แต่ไม่ล้น */
+        .item img { 
+            width: auto; 
+            height: 75px; /* กำหนดความสูงตายตัวเพื่อให้รูปไม่ล้นปุ่ม */
+            max-width: 100%; 
+            object-fit: contain; 
+            display: block;
+            margin: 0 auto;
+        }
+        .item span { font-size: 12px; margin-top: 4px; font-weight: 500; color: #881337; }
         .item.selected { border-color: #ff4d94; background: #fff0f5; transform: translateY(-3px); }
-        .badge { position: absolute; top: -5px; right: -5px; background: #ff4d94; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; display: none; z-index: 10; font-weight: bold; }
+        
+        .badge { position: absolute; top: 5px; right: 5px; background: #ff4d94; color: white; padding: 2px 7px; border-radius: 10px; font-size: 11px; display: none; z-index: 10; font-weight: bold; }
         .result-area { height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .dice-row img { width: 40px; height: 40px; margin: 0 4px; border-radius: 8px; background: white; padding: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .dice-row img { width: 45px; height: 45px; margin: 0 4px; border-radius: 8px; background: white; padding: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         #rollBtn { background: #ff4d94; color: white; padding: 14px; width: 90%; font-size: 22px; border-radius: 50px; border: none; font-weight: bold; align-self: center; margin-bottom: 10px; cursor: pointer; box-shadow: 0 8px 20px rgba(255, 77, 148, 0.4); }
 
         /* Admin Modal */
@@ -125,7 +135,6 @@ const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
-// ฟังก์ชันล้างชื่อห้ามมีเครื่องหมายจุด เพื่อส่งไป Firebase
 function fixPath(name) {
     if(!name) return "";
     return name.replace(/\./g, '_dot_').replace(/@/g, '_at_').replace(/[#$\[\]]/g, '');
@@ -135,9 +144,7 @@ function handleAuth() {
     let rawName = document.getElementById('usernameInput').value.trim();
     let pass = document.getElementById('passwordInput').value.trim();
     if(!rawName || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
-    
     let safeName = fixPath(rawName);
-    
     database.ref('goldorax/lucky_pinky/users/' + safeName).once('value').then((snapshot) => {
         const userData = snapshot.val();
         if(userData) {
@@ -150,7 +157,7 @@ function handleAuth() {
                 alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(rawName);
             });
         }
-    }).catch(err => alert("เกิดข้อผิดพลาด: " + err.message));
+    });
 }
 
 function loginSuccess(name) { currentUser = name; sessionStorage.setItem('lucky_session_user', name); initGame(); }
