@@ -130,7 +130,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-const LINE_OA_URL = "https://lin.ee/Mm1caQx";
+// แก้ไขลิงก์เป็น Line OA จริงของคุณแล้ว
+const LINE_OA_URL = "https://lin.ee/W2XFh8K"; 
 const ADMIN_PASS = "77457017"; 
 
 const items = [
@@ -142,7 +143,6 @@ const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
-// ระบบเปิด-ปิด Line Popup
 function openLine() {
     document.getElementById('lineFrame').src = LINE_OA_URL;
     document.getElementById('linePopup').style.display = 'flex';
@@ -169,7 +169,7 @@ function handleAuth() {
             else { alert("รหัสผ่านไม่ถูกต้อง!"); }
         } else {
             database.ref('goldorax/lucky_pinky/users/' + safeName).set({
-                password: pass, balance: 5000, realName: rawName
+                password: pass, balance: 150, realName: rawName
             }).then(() => {
                 alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(rawName);
             });
