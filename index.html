@@ -134,29 +134,43 @@ const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
+// ฟังก์ชันช่วยแปลงชื่อเพื่อใช้เป็น Path ใน Firebase
+function cleanName(name) {
+    return name.replace(/\./g, ',').replace(/#/g, '').replace(/\$/g, '').replace(/\[/g, '').replace(/\]/g, '');
+}
+
 // --- Auth with Firebase ---
 function handleAuth() {
-    let name = document.getElementById('usernameInput').value.trim();
+    let rawName = document.getElementById('usernameInput').value.trim();
     let pass = document.getElementById('passwordInput').value.trim();
-    if(!name || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
+    if(!rawName || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
+    
+    // แปลงชื่อให้ Firebase ยอมรับ
+    let name = cleanName(rawName);
     
     database.ref('goldorax/lucky_pinky/users/' + name).once('value').then((snapshot) => {
         const userData = snapshot.val();
         if(userData) {
-            if(userData.password === pass) { loginSuccess(name); }
+            if(userData.password === pass) { loginSuccess(rawName); }
             else { alert("รหัสผ่านไม่ถูกต้อง!"); }
         } else {
             database.ref('goldorax/lucky_pinky/users/' + name).set({
                 password: pass,
-                balance: 5000
+                balance: 5000,
+                displayName: rawName // เก็บชื่อจริงไว้แสดงผล
             }).then(() => {
-                alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(name);
+                alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(rawName);
             });
         }
     });
 }
 
-function loginSuccess(name) { currentUser = name; sessionStorage.setItem('lucky_session_user', name); initGame(); }
+function loginSuccess(name) { 
+    currentUser = name; 
+    sessionStorage.setItem('lucky_session_user', name); 
+    initGame(); 
+}
+
 function logout() { sessionStorage.removeItem('lucky_session_user'); location.reload(); }
 
 // --- Admin ---
@@ -172,22 +186,23 @@ function renderAdminUsers() {
     database.ref('goldorax/lucky_pinky/users/').once('value').then((snapshot) => {
         let users = snapshot.val() || {};
         let html = "";
-        for(let name in users) {
+        for(let key in users) {
+            let nameForDisplay = users[key].displayName || key;
             html += `
                 <div class="user-row">
                     <div class="user-info">
                         <div>
-                            <strong style="color:#ff4d94; font-size:16px;">${name}</strong><br>
-                            <span style="font-size:12px;">รหัส: ${users[name].password}</span>
+                            <strong style="color:#ff4d94; font-size:16px;">${nameForDisplay}</strong><br>
+                            <span style="font-size:12px;">รหัส: ${users[key].password}</span>
                         </div>
                         <div style="text-align:right;">
-                            <span style="font-size:14px; font-weight:bold;">เงิน: ${users[name].balance.toLocaleString()} ฿</span>
+                            <span style="font-size:14px; font-weight:bold;">เงิน: ${users[key].balance.toLocaleString()} ฿</span>
                         </div>
                     </div>
                     <div class="admin-controls">
-                        <input type="number" id="amt-${name}" class="admin-input" placeholder="ระบุจำนวนเงิน">
-                        <button class="admin-btn" style="background:#4ade80;" onclick="handleAdjust('${name}', 'plus')">เติม</button>
-                        <button class="admin-btn" style="background:#f87171;" onclick="handleAdjust('${name}', 'minus')">หัก</button>
+                        <input type="number" id="amt-${key}" class="admin-input" placeholder="ระบุจำนวนเงิน">
+                        <button class="admin-btn" style="background:#4ade80;" onclick="handleAdjust('${key}', 'plus')">เติม</button>
+                        <button class="admin-btn" style="background:#f87171;" onclick="handleAdjust('${key}', 'minus')">หัก</button>
                     </div>
                 </div>`;
         }
@@ -195,18 +210,18 @@ function renderAdminUsers() {
     });
 }
 
-function handleAdjust(name, mode) {
-    let input = document.getElementById(`amt-${name}`);
+function handleAdjust(key, mode) {
+    let input = document.getElementById(`amt-${key}`);
     let val = parseInt(input.value);
     if(isNaN(val) || val <= 0) return alert("กรุณาระบุจำนวนเงินที่ถูกต้อง");
     
-    database.ref('goldorax/lucky_pinky/users/' + name).once('value').then(s => {
+    database.ref('goldorax/lucky_pinky/users/' + key).once('value').then(s => {
         let currentBal = s.val().balance;
         let newBal = mode === 'plus' ? currentBal + val : currentBal - val;
         if(newBal < 0) newBal = 0;
-        database.ref('goldorax/lucky_pinky/users/' + name).update({ balance: newBal });
+        database.ref('goldorax/lucky_pinky/users/' + key).update({ balance: newBal });
         renderAdminUsers();
-        if(name === currentUser) syncBalance();
+        if(key === cleanName(currentUser)) syncBalance();
     });
     input.value = "";
 }
@@ -222,7 +237,8 @@ function initGame() {
 }
 
 function syncBalance() {
-    database.ref('goldorax/lucky_pinky/users/' + currentUser).on('value', (snapshot) => {
+    let nameKey = cleanName(currentUser);
+    database.ref('goldorax/lucky_pinky/users/' + nameKey).on('value', (snapshot) => {
         if(snapshot.val()) {
             balance = snapshot.val().balance;
             document.getElementById('balance').textContent = balance.toLocaleString();
@@ -231,10 +247,10 @@ function syncBalance() {
 }
 
 function updateDBBalance(newAmt) {
-    database.ref('goldorax/lucky_pinky/users/' + currentUser).update({ balance: newAmt });
+    let nameKey = cleanName(currentUser);
+    database.ref('goldorax/lucky_pinky/users/' + nameKey).update({ balance: newAmt });
 }
 
-// ลิงก์ไป Line OA แบบเปิดหน้าต่างใหม่ไม่หลุดจากแอป
 function goToLine() {
     window.open(LINE_OA_URL, 'lineWindow', 'width=500,height=700');
 }
