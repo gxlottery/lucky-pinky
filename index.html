@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LUCKY PINKY - Pro Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0; padding: 0; font-family: 'Kanit', sans-serif;
+            background: linear-gradient(180deg, #ff8dc0 0%, #ffbad5 100%);
+            color: #881337; height: 100vh; overflow: hidden;
+        }
+
+        /* หน้า Login */
+        #loginPage { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 20px; }
+        .login-card { background: rgba(255, 255, 255, 0.95); padding: 35px 25px; border-radius: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 320px; text-align: center; }
+        .login-card h1 { margin-bottom: 25px; color: #ff4d94; font-size: 28px; cursor: pointer; }
+        .login-input { width: 100%; padding: 14px 18px; border-radius: 15px; border: 2px solid #ffccd5; margin-bottom: 12px; font-family: 'Kanit'; outline: none; font-size: 16px; }
+        .btn-login { width: 100%; padding: 14px; border-radius: 15px; border: none; background: #ff4d94; color: white; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 77, 148, 0.3); margin-top: 10px; }
+
+        /* หน้า Game */
+        #gamePage { display: none; flex-direction: column; height: 100%; }
+        header { text-align: center; padding: 10px 0; font-size: 20px; font-weight: bold; color: white; text-shadow: 1px 2px 4px rgba(0,0,0,0.1); cursor: pointer; }
+        .status-bar { background: rgba(255, 255, 255, 0.85); margin: 0 15px 10px 15px; padding: 10px 15px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        #balance { color: #ff4d94; font-weight: bold; font-size: 18px; }
+        .wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 15px 10px 15px; }
+        .btn-wallet { padding: 10px; border-radius: 14px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .deposit-btn { background: #ff4d94; color: white; }
+        .withdraw-btn { background: white; color: #ff4d94; }
+
+        /* แถบชิปเดิมพัน */
+        .chip-container { display: flex; justify-content: center; gap: 4px; padding: 0 10px 10px 10px; flex-wrap: wrap; }
+        .chip { width: 42px; height: 42px; border-radius: 50%; background: white; border: 2px solid #ffccd5; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .chip.active { background: #ff4d94; color: white; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 77, 148, 0.5); }
+
+        .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px; flex-grow: 1; }
+        .item { background: white; border-radius: 20px; padding: 8px; text-align: center; position: relative; border: 3px solid transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: 0.2s; }
+        .item img { width: 100%; max-width: 45px; }
+        .item.selected { border-color: #ff4d94; background: #fff0f5; transform: translateY(-3px); }
+        .badge { position: absolute; top: -5px; right: -5px; background: #ff4d94; color: white; padding: 2px 7px; border-radius: 10px; font-size: 10px; display: none; z-index: 10; }
+        .result-area { height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .dice-row img { width: 35px; height: 35px; margin: 0 4px; border-radius: 8px; background: rgba(255,255,255,0.3); padding: 3px; }
+        #rollBtn { background: #ff4d94; color: white; padding: 14px; width: 90%; font-size: 22px; border-radius: 50px; border: none; font-weight: bold; align-self: center; margin-bottom: 10px; cursor: pointer; box-shadow: 0 8px 20px rgba(255, 77, 148, 0.4); }
+
+        /* Admin Modal (Pink Theme) */
+        #adminModal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #fff5f7; z-index: 1000; padding: 20px; overflow-y: auto; color: #881337;
+        }
+        .admin-title { font-size: 24px; font-weight: bold; color: #ff4d94; border-bottom: 3px solid #ff4d94; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-row { background: white; padding: 15px; border-radius: 20px; margin-bottom: 12px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(255, 77, 148, 0.1); border: 1px solid #ffccd5; }
+        .user-info { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
+        .admin-controls { display: flex; gap: 5px; width: 100%; }
+        .admin-input { flex-grow: 1; padding: 8px; border-radius: 10px; border: 1px solid #ffccd5; outline: none; font-family: 'Kanit'; }
+        .admin-btn { padding: 8px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; color: white; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div id="loginPage">
+    <div class="login-card">
+        <h1 onclick="adminTrigger()">💖 LUCKY PINKY</h1>
+        <p style="font-size: 13px; color: #881337; margin-bottom: 20px;">ระบุชื่อและรหัสผ่านเพื่อเข้าเล่น</p>
+        <input type="text" id="usernameInput" class="login-input" placeholder="ชื่อผู้เล่น">
+        <input type="password" id="passwordInput" class="login-input" placeholder="รหัสผ่าน (4 หลักขึ้นไป)">
+        <button class="btn-login" onclick="handleAuth()">เข้าสู่ระบบ / สมัครสมาชิก</button>
+    </div>
+</div>
+
+<div id="gamePage">
+    <header onclick="adminTrigger()">💖 LUCKY PINKY 🎲</header>
+    <div class="status-bar">
+        <div>ผู้เล่น: <span id="displayName" style="font-weight:bold; color:#ff4d94;"></span></div>
+        <div>เครดิต: <span id="balance">0</span> ฿</div>
+    </div>
+    <div class="wallet-actions">
+        <button class="btn-wallet deposit-btn" onclick="goToLine()">➕ เติมเงิน</button>
+        <button class="btn-wallet withdraw-btn" onclick="goToLine()">➖ ถอนเงิน</button>
+    </div>
+    <div class="chip-container" id="chipSelector"></div>
+    <div class="board" id="board"></div>
+    <div class="result-area" id="resultArea"><div style="color:white; font-weight:bold; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">เลือกชิปแล้ววางเดิมพัน!</div></div>
+    <button id="rollBtn">ROLL</button>
+    <div style="text-align: center; margin-bottom: 10px;"><span onclick="logout()" style="font-size: 12px; color: #fff; text-decoration: underline; cursor: pointer; opacity: 0.8;">ออกจากระบบ</span></div>
+</div>
+
+<div id="adminModal">
+    <div class="admin-title">
+        <span>⚙️ แอดมินหลังบ้าน</span>
+        <button onclick="closeAdmin()" style="border:none; background:none; font-size:28px; color:#ff4d94; cursor:pointer;">✖</button>
+    </div>
+    <div id="userList"></div>
+</div>
+
+<script>
+const LINE_OA_URL = "https://line.me/ti/p/@yourlineid";
+const ADMIN_PASS = "77457017"; 
+
+const items = [
+    { name: "น้ำเต้า", img:"gourd.png"  },
+    { name: "ปู", img:"crab.png" },
+    { name: "ปลา", img: "fish.png" },
+    { name: "เสือ", img: "tiger.png" },
+    { name: "ไก่", img:"rooster.png" },
+    { name: "กุ้ง", img: "shrimp.png" }
+];
+
+const betOptions = [20, 50, 100, 200, 500, 1000];
+
+let currentUser = sessionStorage.getItem('lucky_session_user');
+let balance = 0, currentChip = 20, bets = {};
+
+// --- Auth ---
+function handleAuth() {
+    let name = document.getElementById('usernameInput').value.trim();
+    let pass = document.getElementById('passwordInput').value.trim();
+    if(!name || pass.length < 4) return alert("กรุณาใส่ชื่อและรหัสผ่าน 4 หลักขึ้นไป");
+    let users = JSON.parse(localStorage.getItem('lucky_secure_users') || '{}');
+    if(users[name]) {
+        if(users[name].password === pass) { loginSuccess(name); }
+        else { alert("รหัสผ่านไม่ถูกต้อง!"); }
+    } else {
+        users[name] = { password: pass, balance: 5000 };
+        localStorage.setItem('lucky_secure_users', JSON.stringify(users));
+        alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(name);
+    }
+}
+function loginSuccess(name) { currentUser = name; sessionStorage.setItem('lucky_session_user', name); initGame(); }
+function logout() { sessionStorage.removeItem('lucky_session_user'); location.reload(); }
+
+// --- Admin ---
+function adminTrigger() {
+    let pw = prompt("กรุณาใส่รหัสผ่านแอดมิน:");
+    if(pw === ADMIN_PASS) {
+        document.getElementById('adminModal').style.display = 'block';
+        renderAdminUsers();
+    } else if(pw !== null) { alert("รหัสผ่านแอดมินไม่ถูกต้อง!"); }
+}
+
+function renderAdminUsers() {
+    let users = JSON.parse(localStorage.getItem('lucky_secure_users') || '{}');
+    let html = "";
+    for(let name in users) {
+        html += `
+            <div class="user-row">
+                <div class="user-info">
+                    <div>
+                        <strong style="color:#ff4d94; font-size:16px;">${name}</strong><br>
+                        <span style="font-size:12px;">รหัส: ${users[name].password}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:14px; font-weight:bold;">เงิน: ${users[name].balance.toLocaleString()} ฿</span>
+                    </div>
+                </div>
+                <div class="admin-controls">
+                    <input type="number" id="amt-${name}" class="admin-input" placeholder="ระบุจำนวนเงิน">
+                    <button class="admin-btn" style="background:#4ade80;" onclick="handleAdjust('${name}', 'plus')">เติม</button>
+                    <button class="admin-btn" style="background:#f87171;" onclick="handleAdjust('${name}', 'minus')">หัก</button>
+                </div>
+            </div>
+        `;
+    }
+    document.getElementById('userList').innerHTML = html || "<p style='text-align:center;'>ยังไม่มีผู้เล่น</p>";
+}
+
+function handleAdjust(name, mode) {
+    let input = document.getElementById(`amt-${name}`);
+    let val = parseInt(input.value);
+    if(isNaN(val) || val <= 0) return alert("กรุณาระบุจำนวนเงินที่ถูกต้อง");
+    adjustMoney(name, mode === 'plus' ? val : -val);
+    input.value = ""; // clear input
+}
+
+function adjustMoney(name, amount) {
+    let users = JSON.parse(localStorage.getItem('lucky_secure_users') || '{}');
+    if(!users[name]) return;
+    users[name].balance += amount;
+    if(users[name].balance < 0) users[name].balance = 0;
+    localStorage.setItem('lucky_secure_users', JSON.stringify(users));
+    renderAdminUsers(); syncBalance();
+}
+
+function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; syncBalance(); }
+
+// --- Game Logic ---
+function initGame() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('gamePage').style.display = 'flex';
+    document.getElementById('displayName').textContent = currentUser;
+    syncBalance();
+}
+function syncBalance() {
+    let users = JSON.parse(localStorage.getItem('lucky_secure_users') || '{}');
+    if(users[currentUser]) {
+        balance = users[currentUser].balance;
+        document.getElementById('balance').textContent = balance.toLocaleString();
+    }
+}
+function updateDBBalance(newAmt) {
+    let users = JSON.parse(localStorage.getItem('lucky_secure_users') || '{}');
+    users[currentUser].balance = newAmt;
+    localStorage.setItem('lucky_secure_users', JSON.stringify(users));
+    syncBalance();
+}
+
+betOptions.forEach(amt => {
+    const d = document.createElement("div");
+    d.className = `chip ${amt === currentChip ? 'active' : ''}`;
+    d.textContent = amt >= 1000 ? (amt/1000) + "K" : amt;
+    d.onclick = () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        d.classList.add('active'); currentChip = amt;
+    };
+    document.getElementById("chipSelector").appendChild(d);
+});
+
+items.forEach((item, idx) => {
+    const d = document.createElement("div");
+    d.className = "item";
+    d.innerHTML = `<div class="badge" id="b-${idx}">0</div><img src="${item.img}"><span>${item.name}</span>`;
+    d.onclick = () => {
+        let total = Object.values(bets).reduce((a,b)=>a+b,0);
+        if((total + currentChip) > balance) return alert("เครดิตไม่เพียงพอ!");
+        bets[idx] = (bets[idx] || 0) + currentChip;
+        updateItemUI();
+    };
+    document.getElementById("board").appendChild(d);
+});
+
+function updateItemUI() {
+    items.forEach((_, idx) => {
+        const b = document.getElementById(`b-${idx}`);
+        b.style.display = bets[idx] > 0 ? "block" : "none";
+        b.textContent = bets[idx] >= 1000 ? (bets[idx]/1000) + "K" : bets[idx];
+        b.parentElement.classList.toggle("selected", bets[idx] > 0);
+    });
+}
+
+function goToLine() { window.open(LINE_OA_URL, '_blank'); }
+
+document.getElementById("rollBtn").onclick = () => {
+    let total = Object.values(bets).reduce((a,b)=>a+b,0);
+    if(total === 0) return alert("กรุณาวางเดิมพันก่อนเล่น");
+    document.getElementById("rollBtn").disabled = true;
+    balance -= total; updateDBBalance(balance);
+    let c = 0;
+    const s = setInterval(() => {
+        const tmp = Array.from({length:3}, () => items[Math.floor(Math.random()*6)].img);
+        document.getElementById("resultArea").innerHTML = `<div class="dice-row">${tmp.map(i => `<img src="${i}">`).join("")}</div>`;
+        if(++c > 10) { clearInterval(s); finalize(); }
+    }, 80);
+};
+
+function finalize() {
+    const dice = Array.from({length:3}, () => Math.floor(Math.random()*6));
+    let win = 0;
+    let isTriple = false;
+    for(let i in bets) {
+        const match = dice.filter(d => d == i).length;
+        if(match > 0) {
+            if(match === 3) {
+                win += (bets[i] + (bets[i] * 5)); 
+                isTriple = true;
+            } else {
+                win += (bets[i] + (bets[i] * match));
+            }
+        }
+    }
+    balance += win; updateDBBalance(balance);
+    document.getElementById("resultArea").innerHTML = `
+        <div class="dice-row">${dice.map(d => `<img src="${items[d].img}">`).join("")}</div>
+        <div style="color:white; font-weight:bold; font-size:18px;">${win > 0 ? (isTriple ? '🔥 ตอง x5! +' + win : 'ชนะได้รับ: +' + win) : 'ไม่ถูกรางวัล'}</div>
+    `;
+    bets = {}; updateItemUI();
+    document.getElementById("rollBtn").disabled = false;
+}
+
+if(currentUser) initGame();
+window.addEventListener('storage', syncBalance);
+</script>
+</body>
+</html>
