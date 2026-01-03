@@ -117,6 +117,7 @@
 </div>
 
 <script>
+// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyACTSU6LYObSv5gEAfKJt4Yr4LaCCAkQvw",
     authDomain: "goldorax-game.firebaseapp.com",
@@ -130,8 +131,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// แก้ไขลิงก์เป็น Line OA จริงของคุณแล้ว
-const LINE_OA_URL = "https://lin.ee/W2XFh8K"; 
+// ข้อมูลหลัก (ลิ้งค์ Line จริง)
+const LINE_OA_URL = "https://lin.ee/Mm1caQx"; 
 const ADMIN_PASS = "77457017"; 
 
 const items = [
@@ -143,6 +144,7 @@ const betOptions = [20, 50, 100, 200, 500, 1000];
 let currentUser = sessionStorage.getItem('lucky_session_user');
 let balance = 0, currentChip = 20, bets = {};
 
+// Popup Controls
 function openLine() {
     document.getElementById('lineFrame').src = LINE_OA_URL;
     document.getElementById('linePopup').style.display = 'flex';
@@ -152,6 +154,7 @@ function closeLine() {
     document.getElementById('lineFrame').src = "";
 }
 
+// Firebase Path Fix (Email support)
 function fixPath(name) {
     if(!name) return "";
     return name.replace(/\./g, '_dot_').replace(/@/g, '_at_').replace(/[#$\[\]]/g, '');
@@ -247,6 +250,7 @@ function updateDBBalance(newAmt) {
     database.ref('goldorax/lucky_pinky/users/' + fixPath(currentUser)).update({ balance: newAmt });
 }
 
+// UI Build
 betOptions.forEach(amt => {
     const d = document.createElement("div");
     d.className = `chip ${amt === currentChip ? 'active' : ''}`;
