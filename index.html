@@ -153,7 +153,7 @@ function handleAuth() {
             else { alert("รหัสผ่านไม่ถูกต้อง!"); }
         } else {
             database.ref('goldorax/lucky_pinky/users/' + safeName).set({
-                password: pass, balance: 150, realName: rawName
+                password: pass, balance: 0, realName: rawName
             }).then(() => {
                 alert("สมัครสมาชิกสำเร็จ!"); loginSuccess(rawName);
             });
@@ -300,3 +300,4 @@ if(currentUser) initGame();
 </script>
 </body>
 </html>
+
